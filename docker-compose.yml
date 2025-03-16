@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      - PYTHON_VERSION=3.10 # Specify Python version
+    command:
+      [
+        "/wait-for-it.sh",
+        "db",
+        "3306",
+        "--",
+        "python",
+        "manage.py",
+        "runserver",
+        "0.0.0.0:8000",
+      ]
+    depends_on:
+      - db # Ensure the web service waits for the database to be ready
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: burmese_guide
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
